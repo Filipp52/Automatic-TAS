@@ -1,8 +1,8 @@
-"""В этом документе будут функции для работы с JsonMemoryCommunication"""
+"""В этом файле функции для работы с JsonMemoryCommunication"""
 import json
 
 
-jmc = {
+jmc_example = {
     "2023-11-08": {
         "ID_работника (ФИО_трёхзначное число)": {
             "ФИО": "ФИО",
@@ -60,5 +60,47 @@ jmc = {
     }
 }
 
-with open("jmc_example.json", "w") as jmc_file:
-    json.dump(jmc, jmc_file, ensure_ascii=False)
+
+def get_jmc(path_to_jmc: str, *key: str) -> dict:
+    """
+    Получите словарь скачанный из JsonMemoryCommunication
+
+    :param path_to_jmc: путь, где хранится файл jmc
+    :param key: если хочешь получить не все значения, а конкретные, то передавай ключи по которым мне нужно идти
+    :return: словарь jmc
+    """
+    with open(path_to_jmc, "r") as jmc_file:
+        if key:
+            jmc_actual_key = json.load(jmc_file)
+            for k in key:
+                jmc_actual_key = jmc_actual_key[k]
+            return jmc_actual_key
+        return json.load(jmc_file)
+
+
+def rewrite_jmc(pat_to_jmc: str, jmc: dict):
+    """
+    Записывает ваш словарь в JsonMemoryCommunication
+
+    :param pat_to_jmc: путь, где хранится файл jmc
+    :param jmc: словарь, который нужно записать
+    """
+    with open(pat_to_jmc, "w") as jmc_file:
+        json.dump(jmc, jmc_file, ensure_ascii=False)
+
+
+def update_jmc(actual_key: str, value, path_to_jmc: str, way_for_actual_key: str | None = None):
+    """
+    Обновляет JsonMemoryCommunication
+
+    :param actual_key: ключ, на который мы запишем переданные значения
+    :param value: значение, которое нужно записать
+    :param path_to_jmc: путь где хранится файл jmc
+    :param way_for_actual_key: Если вдруг вы хотите поместить новое значение не в корень jmc то передайте путь ключей, используя '/'
+    """
+    jmc = get_jmc(path_to_jmc)
+    if way_for_actual_key:
+        for k in way_for_actual_key.split("/"):
+            jmc = jmc[k]
+    jmc[actual_key] = value
+    rewrite_jmc(path_to_jmc, jmc)
