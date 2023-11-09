@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
+    <title>Главная</title>
+
+    <!DOCTYPE html>
+
+    <style>
+    body {
+        font-family: "Lato", sans-serif;
+        background-color: #F0F3F8;
+    }
+
+    .sidenav {
+        height: 100%;
+        width: 0;
+        position: fixed;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        background-color: #14368B;
+        overflow-x: hidden;
+        transition: 0.5s;
+        padding-top: 60px;
+    }
+
+    .sidenav a {
+        padding: 8px 8px 8px 32px;
+        text-decoration: none;
+        font-size: 25px;
+        color: #FFFFFF;
+        display: block;
+        transition: 0.3s;
+    }
+
+    .sidenav a:hover {
+        color: #EB5A63;
+    }
+
+    .sidenav .closebtn {
+        position: absolute;
+        top: 10px;
+        font-size: 36px;
+    }
+
+    .openbtn {
+        top: 10px;
+        font-size:30px;
+        cursor:pointer;
+        color: #14368B;
+    }
+
+    .openbtn hover {
+        color: #EB5A63;
+    }
+
+    #main {
+        transition: margin-left .5s;
+        padding: 10px;
+        background-color: #FFFFFF;
+        border-radius: 10px;
+        box-shadow: 0px 1px 5px grey;
+    }
+
+    @media screen and (max-height: 450px) {
+      .sidenav {padding-top: 15px;}
+      .sidenav a {font-size: 18px;}
+    }
+
+  .tasks table {
+  margin: auto;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #14368B;
+}
+
+.tasks  tr, th {
+  padding: 10px;
+  border: 1px solid #14368B;
+}
+
+</style>
+</head>
+
+
+<body>
+<div id="side_nav" class="sidenav">
+    <p></p>
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+    <a href="{{ url_for('index') }}">Главная</a>
+    <a href="{{ url_for('tasks') }}">Задачи</a>
+    <a href="{{ url_for('staff') }}">Сотрудники</a>
+</div>
+
+
+<div id="main">
+    <table style="margin: auto; width:100%;">
+        <tr>
+            <td><span id="burger" class="openbtn" onclick="openNav()">☰</span></td>
+            <td>Главная</td>
+            <td align="right">Администратор</td>
+        </tr>
+    </table>
+</div>
+
+
+<div id="base" class="tasks">
+    <h2 style="color: #EB5A63;">Задачи на сегодня</h2>
+    <table width="100%">
+        <thead>
+        <tr>
+            <th>№</th>
+            <th>Адрес</th>
+            <th>Задача</th>
+            <th>Назначено сотруднику</th>
+            <th>Статус</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for el in result %}
+        <tr>
+            <th> {{ el[0] }}</th>
+            <th> {{ el[1] }}</th>
+            <th> {{ el[2] }}</th>
+            <th> {{ el[3] }}</th>
+            <th> {{ el[4] }}</th>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+<script>
+function openNav() {
+    document.getElementById("side_nav").style.width = "250px";
+    document.getElementById("main").style.marginLeft = "250px";
+    document.getElementById("base").style.marginLeft = "250px";
+    document.getElementById("burger").style.opacity = 0;
+}
+
+function closeNav() {
+    document.getElementById("side_nav").style.width = "0";
+    document.getElementById("main").style.marginLeft= "0";
+    document.getElementById("base").style.marginLeft = "0px";
+    document.getElementById("burger").style.opacity = 100;
+}
+</script>
+
+</body>
+</html>
