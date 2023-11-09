@@ -3,7 +3,7 @@ import json
 
 
 jmc_example = {
-    "2023-11-08": {
+    "ГГГГ-ММ-ДД (дата)": {
         "ID_работника (ФИО_трёхзначное число)": {
             "ФИО": "ФИО",
             "Грейд": "грейд",
@@ -13,7 +13,9 @@ jmc_example = {
                 "Адрес1": {"Название задания 1": "Статус"},
                 "Адрес2": {"Название задания 1": "Выполнено/Не выполнено"}
             }
-        },
+        }
+    },
+    "2023-11-08": {
         "ДНВ_123": {
             "ФИО": "Дерягин Никита Владимирович",
             "Грейд": "Синьор",
@@ -70,12 +72,10 @@ def get_jmc(path_to_jmc: str, *key: str) -> dict:
     :return: словарь jmc
     """
     with open(path_to_jmc, "r") as jmc_file:
-        if key:
-            jmc_actual_key = json.load(jmc_file)
-            for k in key:
-                jmc_actual_key = jmc_actual_key[k]
-            return jmc_actual_key
-        return json.load(jmc_file)
+        jmc_actual_key = json.load(jmc_file)
+        for k in key:
+            jmc_actual_key = jmc_actual_key[k]
+        return jmc_actual_key
 
 
 def rewrite_jmc(pat_to_jmc: str, jmc: dict):
