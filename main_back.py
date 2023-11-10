@@ -1,7 +1,7 @@
 """В этом файле сборка которая запускается в 00:00 и высчитывать работников и их задачи"""
 from background_package.load_xlsx import high_1, high_2, low_1, low_2, get_workers, middle_1
 import pandas as pd
-from background_package.work_with_jmc import get_jmc
+from background_package.work_with_jmc import get_jmc, write_worker_in_jmc
 from settings import path2dataset, path2jmc, path2ntt, today_date, yesterday_date
 
 
@@ -140,7 +140,7 @@ def loyal_paste_task(available_grade: list[str], dict_with_tasks: dict, name_of_
                         temp_result[actual_worker_id]['Задания'].append(actual_task)
                         temp_result[actual_worker_id]['Свободных часов'] -= hours_per_task[name_of_task]
 
-
+# TODO: как-то убедиться что в выданных задачах нет дупликатов (имею ввиду, что если я выдал задачу - убери её из списка задач)
 # Выдаём задания высокого приоритета
 strong_paste_task(
     available_grade=['Синьор'],
@@ -202,6 +202,8 @@ loyal_paste_task(
 )
 # TODO: убедиться, что нет свободных работников при не взятых задачах
 
-# print(temp_result)
-
-# TODO: экспортировать из temp_result в jmc
+# Записываем данные в JMC
+for worker_id_key, value_for_worker in temp_result.items():
+    write_worker_in_jmc(worker_id_key, value_for_worker['Задания'])
+# TODO: экспортировать оставшиеся задачи в ntt
+# TODO: exception_catcher - если ошибка, то запи её в логгер

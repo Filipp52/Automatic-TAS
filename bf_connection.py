@@ -2,8 +2,14 @@
 import random
 import string
 import pandas as pd
+from background_package.work_with_jmc import update_jmc, get_jmc
 from settings import path2dataset
 import hashlib
+from settings import today_date, path2jmc
+
+
+def get_user_dict(worker_id: str, date=today_date) -> dict:
+    return get_jmc(path2jmc, date, worker_id)
 
 
 def get_sha256_hash(s:  str) -> str:
@@ -97,3 +103,13 @@ def login_user(login: str, password: str):
 
 # TODO: функция удаления/изменения работника
 # TODO: функция удаления/изменения точки
+
+
+def switch_task_status(worker_id: str, name_of_street: str):
+    worker = get_user_dict(worker_id)
+    for name_of_task in worker["Задания"][name_of_street]:
+        if worker["Задания"][name_of_street][name_of_task] == 'Не выполнено':
+            worker["Задания"][name_of_street][name_of_task] = 'Выполнено'
+        else:
+            worker["Задания"][name_of_street][name_of_task] = 'Не выполнено'
+    update_jmc(actual_key=worker_id, value=worker, way_for_actual_key=f'{today_date}', path_to_jmc=path2jmc)

@@ -1,5 +1,7 @@
 """В этом файле функции для работы с JsonMemoryCommunication"""
 import json
+from background_package.load_xlsx import get_workers
+from settings import month_date, path2dataset, path2jmc, today_date
 
 
 jmc_example = {
@@ -99,8 +101,63 @@ def update_jmc(actual_key: str, value, path_to_jmc: str, way_for_actual_key: str
     :param way_for_actual_key: Если вдруг вы хотите поместить новое значение не в корень jmc то передайте путь ключей, используя '/'
     """
     jmc = get_jmc(path_to_jmc)
+    try:
+        del jmc[month_date]
+    except KeyError:
+        pass
+    try:
+        jmc[today_date]
+    except KeyError:
+        jmc[today_date] = {}
     if way_for_actual_key:
+        all_jmc = jmc.copy()
         for k in way_for_actual_key.split("/"):
             jmc = jmc[k]
-    jmc[actual_key] = value
+        jmc[actual_key] = value
+
+        keys = way_for_actual_key.split("/")
+        i = len(keys)
+        temp = {}
+        while i > 0:
+            i -= 1
+            temp[keys[i]] = jmc
+            jmc = temp
+            temp = {}
+
+        all_jmc[list(jmc.keys())[0]] = list(jmc.values())[0]
+        jmc = all_jmc.copy()
+    else:
+        jmc[actual_key] = value
     rewrite_jmc(path_to_jmc, jmc)
+
+
+def write_worker_in_jmc(worker_id: str, tasks: list[dict[str, str]]):
+    """
+    Записывает задачи работника на сегодняшний день
+
+    :param worker_id: ID работника
+    :param tasks: Массив с словарями (задачами)
+    """
+    try:
+        worker_params = get_workers(path_to_dataset=path2dataset)[worker_id]
+    except KeyError:
+        raise KeyError(f"Работника с ID - '{worker_id}' нет в ДатаСете")
+
+    result = {
+        "ФИО": worker_params['ФИО'],
+        "Грейд": worker_params['Грейд'],
+        "Кол-во заданий": 0,
+        "Исходная локация": worker_params['Адрес'],
+        "Задания": {}
+    }
+
+    for task in tasks:
+        result["Задания"][task['Адрес']] = {task['Задание']: 'Не выполнено'}
+        result["Кол-во заданий"] += 1
+
+    update_jmc(
+        actual_key=worker_id,
+        value=result,
+        path_to_jmc=path2jmc,
+        way_for_actual_key=f'{today_date}'
+    )
