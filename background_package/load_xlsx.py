@@ -156,7 +156,8 @@ def get_workers(path_to_dataset: str, worker_grade='все') -> dict[str, dict[s
     for value in input_data.values:
         result[str(value[0])] = {
             "Адрес": str(value[1]),
-            "Грейд": str(value[2])
+            "Грейд": str(value[2]),
+            "ФИО": str(value[3])
         }
 
     return result

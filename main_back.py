@@ -2,18 +2,14 @@
 from background_package.load_xlsx import high_1, high_2, low_1, low_2, get_workers, middle_1
 import pandas as pd
 from background_package.work_with_jmc import get_jmc
+from settings import path2dataset, path2jmc, path2ntt, today_date, yesterday_date
 
 
-path2dataset = '/Users/matvey/Downloads/ITSET/ДатаСет_Финал.xlsx'  # TODO: Сделать все параметры в одном месте как настройки
-path2jmc = '/Users/matvey/Downloads/ITSET/jmc.json'
-yesterday = '2023-11-08'
-today = '2023-11-09'
 hours_per_task = {
     "Выезд на точку для стимулирования выдач": 4,
     "Обучение агента": 2,
     "Доставка карт и материалов": 1.5
 }
-# TODO: в том числе сделать изменяемыми в одном месте и грейды и прочие названия, чтоб всё не сломалось при замене одной буквы
 
 
 workers = get_workers(path_to_dataset=path2dataset)
@@ -53,7 +49,10 @@ locations_for_third_task = {
 temp_result = {}  # Сюда мы записываем работника и массив с его заданиями
 
 # Смотрим есть ли невыполненные задачи
-old_tasks = get_jmc(path2jmc, yesterday)
+try:
+    old_tasks = get_jmc(path2jmc, yesterday_date)
+except KeyError:  # Если вчера не было ничего
+    old_tasks = {}
 for worker_id in old_tasks:
     for old_street, old_task in old_tasks[worker_id]['Задания'].items():
         if list(old_task.values())[0] == 'Не выполнено':
