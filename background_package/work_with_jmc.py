@@ -1,7 +1,7 @@
 """В этом файле функции для работы с JsonMemoryCommunication"""
 import json
 from background_package.load_xlsx import get_workers
-from settings import month_date, path2dataset, path2jmc, today_date
+from settings import get_msc_date, path2dataset, path2jmc
 
 
 jmc_example = {
@@ -102,13 +102,13 @@ def update_jmc(actual_key: str, value, path_to_jmc: str, way_for_actual_key: str
     """
     jmc = get_jmc(path_to_jmc)
     try:
-        del jmc[month_date]
+        del jmc[get_msc_date(30)]
     except KeyError:
         pass
     try:
-        jmc[today_date]
+        jmc[get_msc_date()]
     except KeyError:
-        jmc[today_date] = {}
+        jmc[get_msc_date()] = {}
     if way_for_actual_key:
         all_jmc = jmc.copy()
         for k in way_for_actual_key.split("/"):
@@ -159,5 +159,5 @@ def write_worker_in_jmc(worker_id: str, tasks: list[dict[str, str]]):
         actual_key=worker_id,
         value=result,
         path_to_jmc=path2jmc,
-        way_for_actual_key=f'{today_date}'
+        way_for_actual_key=f'{get_msc_date()}'
     )

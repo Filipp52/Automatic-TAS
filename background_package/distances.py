@@ -14,13 +14,8 @@ def ask_geocode_yandex(address: str) -> tuple:
     :param address: Адрес локации
     :return: (длина, широта)
     """
-    # TODO: избежать такого
-    ##########################################################################
-    if not address.count('Краснодар'):
-        address = f"Краснодар, {address}"
     if address.count('ул. им. Героя Аверкиева А.А.'):
         address.replace('ул. им. Героя Аверкиева А.А.', 'ул. Героя Аверкиева')
-    ##########################################################################
 
     yandex_api_key = 'd41bf1b3-cd46-4b67-a626-3725ead0cd11'
     url = f'https://geocode-maps.yandex.ru/1.x/?apikey={yandex_api_key}&geocode={address}&format=json'
@@ -75,3 +70,19 @@ def get_closest_location(static_point: str, locations: list[str]) -> str:
             closest_distance = distance
 
     return closest_location
+
+
+def is_it_in_kras(address: str) -> bool:
+    """
+    Если точка не находится в радиусе 100км от центра Краснодара, тогда беда...
+
+    :param address: Адрес локации в краснодаре (должен начинаться с 'Краснодар, ')
+    :return: True - если точка в радиусе 100км, False - в противном случае
+    """
+    if not address.count('Краснодар'):
+        return False
+
+    center_of_kras = get_geocode('Краснодар')
+    actual_point = get_geocode(address)
+
+    return geodesic(center_of_kras, actual_point).kilometers < 100

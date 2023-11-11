@@ -2,14 +2,16 @@
 import random
 import string
 import pandas as pd
+
+from background_package.distances import is_it_in_kras
 from background_package.load_xlsx import get_workers
 from background_package.work_with_jmc import update_jmc, get_jmc
 from settings import path2dataset
 import hashlib
-from settings import today_date, path2jmc
+from settings import get_msc_date, path2jmc
 
 
-def get_worker_dict(worker_id: str, date=today_date) -> dict:
+def get_worker_dict(worker_id: str, days_ago=0) -> dict:
     """
     Получи словарь работника:
 
@@ -29,9 +31,10 @@ def get_worker_dict(worker_id: str, date=today_date) -> dict:
     }
 
     :param worker_id: id сотрудника
-    :param date: дата форматом 'ГГГГ-ММ-ДД' --- по умолчанию стоит сегодняшняя дата
+    :param days_ago: Сколько дней назад нужно получит (по дефолту - 0 -> сегодняшняя дата)
     :return: словарь работника
     """
+    date = get_msc_date(days_ago)
     return get_jmc(path2jmc, date, worker_id)
 
 
@@ -88,7 +91,8 @@ def registrate_new_worker(fio: str, address: str, grad: str) -> dict[str, str]:
     """
     if grad not in ['Синьор', 'Мидл', 'Джун']:
         raise Exception(f"Ошибка с грейдом нового сотрудника, '{grad}' нельзя использовать")
-    # TODO: проверить адрес на пригодность иначе raise KeyError
+    if not is_it_in_kras(address):
+        raise Exception(f"Адрес '{address}' находится далеко от центра Краснодара (больше 100км)")
 
     workers_list = pd.read_excel(path2dataset, sheet_name='Справочник сотрудников')
     col = list(workers_list.columns)
@@ -175,7 +179,7 @@ def switch_task_status(worker_id: str, name_of_street: str):
             worker["Задания"][name_of_street][name_of_task] = 'Выполнено'
         else:
             worker["Задания"][name_of_street][name_of_task] = 'Не выполнено'
-    update_jmc(actual_key=worker_id, value=worker, way_for_actual_key=f'{today_date}', path_to_jmc=path2jmc)
+    update_jmc(actual_key=worker_id, value=worker, way_for_actual_key=f'{get_msc_date()}', path_to_jmc=path2jmc)
 
 
 def get_all_workers() -> list[list[int | str]]:
@@ -239,7 +243,8 @@ def change_worker_params(worker_id: str, address: str | None = None, fio: str | 
 
     worker_dict = get_workers(path2dataset)[worker_id]
     if address:
-        # TODO: проверить адрес на пригодность иначе raise KeyError
+        if not is_it_in_kras(address):
+            raise Exception(f"Адрес '{address}' находится далеко от центра Краснодара (больше 100км)")
         worker_dict['Адрес'] = address
     if fio:
         worker_dict['ФИО'] = fio
@@ -291,12 +296,12 @@ def get_all_locations() -> list[list[str | int]]:
     for value in data_about_locations.values:
         if str(value[0]) != 'nan':
             location = [
+                str(value[0]),
                 str(value[1]),
                 str(value[2]),
-                str(value[3]),
+                int(value[3]),
                 int(value[4]),
-                int(value[5]),
-                int(value[6])
+                int(value[5])
             ]
             result.append(location)
 
@@ -315,7 +320,9 @@ def registrate_new_location(address: str, when_point_added: str, is_delivered: s
     :param score_of_requests: Кол-во одобренных заявок (int)
     :param score_delivery_cards: Кол-во выданных карт (int)
     """
-    # TODO: проверить адрес на пригодность иначе raise KeyError (и нет ли его уже в базе)
+    if not is_it_in_kras(address):
+        raise Exception(f"Адрес '{address}' находится далеко от центра Краснодара (больше 100км)")
+    # TODO: проверить адрес на нет ли его уже в базе
     if when_point_added not in ['вчера', 'давно']:
         raise Exception(f"Ошибка с параметром 'when_point_added', '{when_point_added}' - нельзя использовать")
     if is_delivered not in ['да', 'нет']:

@@ -10,11 +10,6 @@ def check_file(path: str):
 
 
 corner_dir = os.getcwd()
-now_moscow = datetime.now(pytz.utc).astimezone(
-    pytz.timezone('Europe/Moscow')
-)
-yesterday = now_moscow - timedelta(days=1)  # Вопрос, будут ли изменяться эти данные на сервере когда в 00:00 мы перезапустимся?
-month = now_moscow - timedelta(days=30)
 os.makedirs(os.path.join(corner_dir, 'datas'), exist_ok=True)
 
 
@@ -28,6 +23,16 @@ check_file(path2jmc)
 check_file(path2ntt)
 check_file(path2pgc)
 
-today_date = str(now_moscow.strftime('%Y-%m-%d'))  # TODO: переписать в функцию актуального дня
-yesterday_date = str(yesterday.strftime("%Y-%m-%d"))
-month_date = str(month.strftime("%Y-%m-%d"))
+
+def get_msc_date(time_delta=0) -> str:
+    """
+    Получи дату по москве (по дефолту возращает сегодняшнюю)
+
+    :param time_delta: Сколько дней нужно вычесть из актуального дня
+    :return: Строку даты форматом 'ГГГГ-ММ-ДД'
+    """
+    now_moscow = datetime.now(pytz.utc).astimezone(
+        pytz.timezone('Europe/Moscow')
+    )
+    temp_date = now_moscow - timedelta(days=time_delta)
+    return str(temp_date.strftime('%Y-%m-%d'))
