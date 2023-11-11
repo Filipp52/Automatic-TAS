@@ -160,9 +160,6 @@ def login_worker(login: str, password: str) -> dict:
         raise KeyError('Ошибка в пароле')
 
 
-# TODO: функция удаления/изменения точки
-
-
 def switch_task_status(worker_id: str, name_of_street: str):
     """
     Изменит статус задачи
@@ -343,16 +340,16 @@ def registrate_new_location(address: str, when_point_added: str, is_delivered: s
             data.to_excel(writer, sheet_name=sheet, index=False, header=True)
 
 
-def del_location(address: str):  # TODO: протестировать
+def del_location(address: str):
     """
     Удаляет локацию из таблицы по её адресу
 
     :param address: Адрес точки, которую нужно удалить
     """
     workers_list = pd.read_excel(path2dataset, sheet_name=None)
-    worker_line = workers_list['Входные данные для анализа'].loc[:, ["ID"]]  # TODO: ID -> фвкуы
+    worker_line = workers_list['Входные данные для анализа'].loc[:, ["Адрес точки, г. Краснодар"]]
     worker_line = worker_line[
-        (worker_line['ID'] == address)
+        (worker_line['Адрес точки, г. Краснодар'] == address)
     ]
     try:
         ind = worker_line.index.values[0]
@@ -361,6 +358,79 @@ def del_location(address: str):  # TODO: протестировать
     workers_list['Входные данные для анализа'].drop(ind, inplace=True)
     with pd.ExcelWriter(path2dataset) as writer:
         for sheet, data in workers_list.items():
+            data.to_excel(writer, sheet_name=sheet, index=False, header=True)
+
+
+def change_location_params(address: str, when_point_added: str | None = None, is_delivered: str | None = None,
+                           days_after_delivery: int | None = None, score_of_requests: int | None = None,
+                           score_delivery_cards: int | None = None):
+    """
+    Изменит параметры точки
+    Ключ передавай - адрес локации
+    Параметры необязательны, можно передать от 0 до 5 за раз
+
+    :param address: Адрес локации (должен начинаться с 'Краснодар, ...')
+    :param when_point_added: Когда подключена точка? (можно использовать только 'вчера' и 'давно') <- необязателен
+    :param is_delivered: Карты и материалы доставлены? (можно использовать только 'да' и 'нет') <- необязателен
+    :param days_after_delivery: Кол-во дней после выдачи последней карты (int) <- необязателен
+    :param score_of_requests: Кол-во одобренных заявок (int) <- необязателен
+    :param score_delivery_cards: Кол-во выданных карт (int) <- необязателен
+    """
+    if not when_point_added and not is_delivered and not days_after_delivery and not score_of_requests and not score_delivery_cards:
+        return
+
+    address_list = pd.read_excel(path2dataset, sheet_name='Входные данные для анализа')
+    col = list(address_list.columns)
+    address_line = address_list[
+        (address_list['Адрес точки, г. Краснодар'] == address)
+    ]
+    try:
+        ind = address_line.index.values[0]
+    except IndexError:
+        raise KeyError(f"Точки с адресом '{address}' нет в таблице")
+
+    location_dict = {}
+    if when_point_added:
+        if when_point_added in ['вчера', 'давно']:
+            location_dict['Когда добавлена точка'] = when_point_added
+        else:
+            raise Exception(f"Ошибка с параметром 'when_point_added', '{when_point_added}' - нельзя использовать")
+    else:
+        location_dict['Когда добавлена точка'] = address_line.values[0][1]
+    if is_delivered:
+        if is_delivered in ['да', 'нет']:
+            location_dict['Карта доставлена'] = is_delivered
+        else:
+            raise Exception(f"Ошибка с параметром 'is_delivered', '{is_delivered}' - нельзя использовать")
+    else:
+        location_dict['Карта доставлена'] = address_line.values[0][2]
+    if days_after_delivery:
+        location_dict['Дней после доставки'] = abs(days_after_delivery)
+    else:
+        location_dict['Дней после доставки'] = int(address_line.values[0][3])
+    if score_of_requests:
+        location_dict['Кол-во запросов'] = abs(score_of_requests)
+    else:
+        location_dict['Кол-во запросов'] = int(address_line.values[0][4])
+    if score_delivery_cards:
+        location_dict['Доставленных карт'] = abs(score_delivery_cards)
+    else:
+        location_dict['Доставленных карт'] = int(address_line.values[0][5])
+
+    address_list.drop(ind, inplace=True)
+    new_line = pd.DataFrame(
+        [
+            [address, location_dict['Когда добавлена точка'], location_dict['Карта доставлена'],
+             location_dict['Дней после доставки'], location_dict['Кол-во запросов'], location_dict['Доставленных карт']]
+        ],
+        columns=col
+    )
+
+    book = pd.read_excel(path2dataset, sheet_name=None)
+    book['Входные данные для анализа'] = pd.concat([address_list, new_line], ignore_index=True)
+
+    with pd.ExcelWriter(path2dataset) as writer:
+        for sheet, data in book.items():
             data.to_excel(writer, sheet_name=sheet, index=False, header=True)
 
 
