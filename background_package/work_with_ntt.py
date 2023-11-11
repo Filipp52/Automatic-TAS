@@ -3,11 +3,10 @@ import json
 
 
 ntt_example = {
-    "Адрес": "Задание",
+    "Дата": "2023-11-10",
     "ул. Уральская, д. 162": ["Выезд на точку для стимулирования выдач"],
     "ул. Красных Партизан, д. 117": ["Обучение агента", "Доставка карт и материалов"],
     "ул. Таманская, д. 153 к. 3, кв. 2": ["Обучение агента"],
-
 }
 
 
@@ -26,7 +25,7 @@ def get_ntt(path_to_ntt: str, *key: str) -> dict[str, list[str]]:
         return ntt_actual_key
 
 
-def rewrite_ntt(path_to_ntt: str, ntt: dict):
+def rewrite_json_ntt(path_to_ntt: str, ntt: dict):
     """
     Записывает ваш словарь в NotTakenTasks
 
