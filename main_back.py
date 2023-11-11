@@ -1,10 +1,11 @@
 """В этом файле сборка которая запускается в 00:00 и высчитывать работников и их задачи"""
+import time
+import threading
 from background_package.load_xlsx import high_1, high_2, low_1, low_2, get_workers, middle_1
 import pandas as pd
 from background_package.work_with_jmc import get_jmc, write_worker_in_jmc
-from background_package.work_with_ntt import rewrite_json_ntt, get_ntt
-from bf_connection import switch_task_status
-from settings import path2dataset, path2jmc, path2ntt, today_date, yesterday_date
+from background_package.work_with_ntt import rewrite_json_ntt
+from settings import path2dataset, path2jmc, path2ntt, get_msc_date
 
 
 name_of_firs_task = "Выезд на точку для стимулирования выдач"
@@ -57,12 +58,12 @@ tasks_to_del = {  # Сюда мы записываем ключи, которы�
     name_of_second_task: [],
     name_of_third_task: []
 }
-ntt = {"Дата": today_date}
+ntt = {"Дата": get_msc_date()}
 
 
 # Смотрим есть ли невыполненные задачи
 try:
-    old_tasks = get_jmc(path2jmc, yesterday_date)
+    old_tasks = get_jmc(path2jmc, get_msc_date(1))
 except KeyError:  # Если вчера не было ничего
     old_tasks = {}
 for worker_id in old_tasks:
@@ -86,8 +87,6 @@ for worker_id in old_tasks:
                     temp_result[worker_id]['Задания'].append(created_old_task)
                     temp_result[worker_id]['Свободных часов'] -= hours_per_task[list(old_task.keys())[0]]
 
-
-# TODO: выдаём задания из ntt get_ntt() или неправильно (наверное нужно выдвать из актуального и сверять не выполнили мы вчера его)
 
 def del_taken_task(name_of_task: str):
     global tasks_to_del
@@ -238,10 +237,8 @@ write_ntt(list(locations_for_third_task), name_of_third_task)
 # Записываем данные в JMC
 for worker_id_key, value_for_worker in temp_result.items():
     write_worker_in_jmc(worker_id_key, value_for_worker['Задания'])
-    # for s in value_for_worker['Задания']:
-    #     switch_task_status(worker_id_key, s['Адрес'])
 
 # Записываем данные в NTT
 rewrite_json_ntt(path2ntt, ntt)
 
-# TODO: exception_catcher - если ошибка, то запиши её в логгер
+# TODO: exception_catcher() - если ошибка, то запиши её в логгер, ведь 'show must go on'
