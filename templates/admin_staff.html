@@ -265,15 +265,20 @@
     </table>
 </div>
 
+<div >
+    {% if messages %}
+        {{massage}}
+    {% endif %}
+</div>
 
 <div id="h" style ="margin-top: 10px;">
     <table style ="width: 100%; border-collapse: separate;">
         <tr>
             <td><h2 style="color: #EB5A63;">Сотрудники</h2></td>
-            <td style>
-                {% if messages %}
-                        {{massage}}
-                {% endif %}
+            <td>
+                <form class ="search" action="/admin/about_task" method="POST">
+                  <input type="text" name="search" placeholder="Поиск сотрудника">
+                </form>
 
             </td>
             <td align="right"><button onclick="document.getElementById('id01').style.display='block'" style="width:auto;">Добавить сотрудника</button></td>
