@@ -145,13 +145,22 @@ def login_worker(login: str, password: str) -> dict:
     if len(list(input_data.values)) != 1:
         raise KeyError('Ошибка в логине')
     elif list(input_data.values)[0][1] == __get_sha256_hash__(password):
-        return get_worker_dict(login)   # TODO: Если работник есть, а задач нет, то выбросит ошибку KeyError
+        try:
+            return get_worker_dict(login)
+        except KeyError:
+            worker = get_workers(path2dataset)[login]
+            return {
+                "ФИО": worker["ФИО"],
+                "Грейд": worker["Грейд"],
+                "Кол-во заданий": 0,
+                "Исходная локация": worker["Адрес"],
+                "Задания": {}
+            }
     else:
         raise KeyError('Ошибка в пароле')
 
 
-# TODO: функция изменения работника
-# TODO: функция удаления/изменения точки
+# TODO: функция добавления/удаления/изменения точки
 
 
 def switch_task_status(worker_id: str, name_of_street: str):
@@ -174,11 +183,11 @@ def switch_task_status(worker_id: str, name_of_street: str):
 
 def get_all_workers() -> list[list[int | str]]:
     """
-    Возвращаю список из списков по каждому сотруднику, использую формат:
+    Возвращаю список из списков по каждому сотруднику, используя формат:
 
     [[Порядковый номер, ID, ФИО, Адрес, Грейд], ...]
 
-    :return: список сотрудников
+    :return: всех сотрудников
     """
     workers_dict = get_workers(path2dataset)
     result = []
@@ -265,6 +274,69 @@ def change_worker_params(worker_id: str, address: str | None = None, fio: str | 
 
     book = pd.read_excel(path2dataset, sheet_name=None)
     book['Справочник сотрудников'] = pd.concat([workers_list, new_line], ignore_index=True)
+
+    with pd.ExcelWriter(path2dataset) as writer:
+        for sheet, data in book.items():
+            data.to_excel(writer, sheet_name=sheet, index=False, header=True)
+
+
+def get_all_locations() -> list[list[str | int]]:
+    """
+    Возвращаю список из списков по каждой локации, используя формат:
+
+    [[Адрес, Когда подключена, Карты и материалы доставлены, Дней после выдачи, Одобренных заявок, Выданных карт], ...]
+
+    :return: все точки
+    """
+    data_about_locations = pd.read_excel(path2dataset, sheet_name='Входные данные для анализа')
+
+    result = []
+    for value in data_about_locations.values:
+        if str(value[0]) != 'nan':
+            location = [
+                str(value[1]),
+                str(value[2]),
+                str(value[3]),
+                int(value[4]),
+                int(value[5]),
+                int(value[6])
+            ]
+            result.append(location)
+
+    return result
+
+
+def registrate_new_location(address: str, when_point_added: str, is_delivered: str,
+                            days_after_delivery: int, score_of_requests: int, score_delivery_cards: int):
+    """
+    Регистрирует новый адрес и записывает его в таблицу эксель
+
+    :param address: Адрес локации (должен начинаться с 'Краснодар, ...')
+    :param when_point_added: Когда подключена точка? (можно использовать только 'вчера' и 'давно')
+    :param is_delivered: Карты и материалы доставлены? (можно использовать только 'да' и 'нет')
+    :param days_after_delivery: Кол-во дней после выдачи последней карты (int)
+    :param score_of_requests: Кол-во одобренных заявок (int)
+    :param score_delivery_cards: Кол-во выданных карт (int)
+    """
+    # TODO: проверить адрес на пригодность иначе raise KeyError (и нет ли его уже в базе)
+    if when_point_added not in ['вчера', 'давно']:
+        raise Exception(f"Ошибка с параметром 'when_point_added', '{when_point_added}' - нельзя использовать")
+    if is_delivered not in ['да', 'нет']:
+        raise Exception(f"Ошибка с параметром 'is_delivered', '{is_delivered}' - нельзя использовать")
+
+    workers_list = pd.read_excel(path2dataset, sheet_name='Входные данные для анализа')
+    col = list(workers_list.columns)
+
+    new_line = pd.DataFrame(
+        [
+            [address, when_point_added, is_delivered,
+             abs(days_after_delivery), abs(score_of_requests), abs(score_delivery_cards)]
+        ],
+        columns=col
+    )
+
+    book = pd.read_excel(path2dataset, sheet_name=None)
+    book['Входные данные для анализа'] = pd.concat([book['Входные данные для анализа'], new_line], ignore_index=True)
 
     with pd.ExcelWriter(path2dataset) as writer:
         for sheet, data in book.items():
