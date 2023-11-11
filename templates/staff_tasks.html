@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Задачи</title>
+    <title>Задания</title>
 
 <style>
     body {
@@ -113,6 +113,15 @@
         display: block;
     }
 
+    input[type=text], select {
+        padding: 12px 10px;
+        margin: 8px 0px;
+        display: inline-block;
+        border: 1px solid #14368B;
+        border-radius: 13px;
+        box-sizing: border-box;
+    }
+
 </style>
 </head>
 <body>
@@ -122,13 +131,13 @@
         <tr>
             <td>
                   <div class="dropdown">
-                    <button class="dropbtn">ФИО</button>
+                    <button class="dropbtn">Сотрудник</button>
                     <div class="dropdown-content">
                       <a href="{{ url_for('index')}}">Выход</a>
                     </div>
                   </div>
             </td>
-            <td>Главная</td>
+            <td>Задания</td>
             <td align="right"><span class="openbtn" style="font-size:30px;" onclick="openNav()">☰</span></td>
         </tr>
     </table>
@@ -138,38 +147,41 @@
 <div id="myNav" class="overlay">
   <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
   <div class="overlay-content">
-<a href="#">Главная</a>
-    <a href="#">Задания</a>
-    <a href="#">Статистика</a>
+    <a href="url_for{{'staff_main'}}">Главная</a>
+    <a href="url_for{{'staff_task'}}">Задания</a>
   </div>
 </div>
 
 <div id="h" style ="margin-top: 10px;">
     <h2 style="color: #EB5A63;">Задачи</h2>
 </div>
+
+<form style = "width:100%;" action="/staff/tasks/" id="tasks" ></form>
+
 <div id="base" class="tasks"  >
     <table width="100%">
         <thead>
         <tr>
-            <th>№</th>
+            <th>ID сотрудника</th>
             <th>Адрес</th>
             <th>Задача</th>
             <th>Статус</th>
         </tr>
         </thead>
         <tbody>
-        <tbody>
         {% for el in result %}
-            <tr>
-                <th> {{ el[0] }}</th>
-                <th> {{ el[1] }}</th>
-                <th> {{ el[2] }}</th>
-                <th>
-                    Как указывать, если выполнено?
-                </th>
-            </tr>
-        {% endfor %}
+<tr>
+                    <th><input type="text" form="tasks" name="name" value="{{el[0]}}" readonly="readonly"></th>
+                    <th><input type="text" form="tasks" name="address" value="{{el[1]}}" readonly="readonly"></th>
+                    <th><input type="text" form="tasks" name="task" value="{{el[2]}}" readonly="readonly"></th>
+                    <th><select form="tasks" name="status">
+                        <option value="Выполнено">Выполнено</option>
+                        <option value="Не выполнено">Не выполнено</option>
+                    </select></th>
 
+
+        {% endfor %}
+</tr>
         </tbody>
     </table>
 </div>

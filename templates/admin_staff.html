@@ -270,6 +270,12 @@
     <table style ="width: 100%; border-collapse: separate;">
         <tr>
             <td><h2 style="color: #EB5A63;">Сотрудники</h2></td>
+            <td style>
+                {% if messages %}
+                        {{massage}}
+                {% endif %}
+
+            </td>
             <td align="right"><button onclick="document.getElementById('id01').style.display='block'" style="width:auto;">Добавить сотрудника</button></td>
         </tr>
     </table>
@@ -289,15 +295,13 @@
         {% for el in result %}
         <tr>
             <th>{{ el[0] }}</th>
-            <th><a href="#">{{ el[1] }}</a></th>
+            <th>{{ el[1] }}</th>
             <th>{{ el[2] }}</th>
             <th>{{ el[3] }}</th>
             <th>{{ el[4] }}</th>
         </tr>
         {% endfor %}
-        </tbody>
 
-        </tbody>
     </table>
 </div>
 
