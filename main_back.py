@@ -1,8 +1,8 @@
 """В этом файле сборка которая запускается в 00:00 и высчитывать работников и их задачи"""
-import json
 from background_package.load_xlsx import high_1, high_2, low_1, low_2, get_workers, middle_1
 import pandas as pd
 from background_package.work_with_jmc import get_jmc, write_worker_in_jmc
+from background_package.work_with_ntt import rewrite_json_ntt, get_ntt
 from bf_connection import switch_task_status
 from settings import path2dataset, path2jmc, path2ntt, today_date, yesterday_date
 
@@ -87,7 +87,7 @@ for worker_id in old_tasks:
                     temp_result[worker_id]['Свободных часов'] -= hours_per_task[list(old_task.keys())[0]]
 
 
-# TODO: выдаём задания из ntt
+# TODO: выдаём задания из ntt get_ntt() или неправильно (наверное нужно выдвать из актуального и сверять не выполнили мы вчера его)
 
 def del_taken_task(name_of_task: str):
     global tasks_to_del
@@ -192,7 +192,6 @@ def write_ntt(streets_from_tasks: list, name_of_task: str):
             ntt[st] = [name_of_task]
 
 
-# TODO: как-то убедиться что в выданных задачах нет дупликатов (имею ввиду, что если я выдал задачу - убери её из списка задач)
 # Выдаём задания высокого приоритета
 strong_paste_task(
     available_grade=['Синьор'],
@@ -243,7 +242,6 @@ for worker_id_key, value_for_worker in temp_result.items():
     #     switch_task_status(worker_id_key, s['Адрес'])
 
 # Записываем данные в NTT
-with open(path2ntt, "w") as ntt_file:
-    json.dump(ntt, ntt_file, ensure_ascii=False)
+rewrite_json_ntt(path2ntt, ntt)
 
-# TODO: exception_catcher - если ошибка, то запи её в логгер
+# TODO: exception_catcher - если ошибка, то запиши её в логгер

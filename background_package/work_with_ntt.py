@@ -25,7 +25,7 @@ def get_ntt(path_to_ntt: str, *key: str) -> dict[str, list[str]]:
         return ntt_actual_key
 
 
-def rewrite_ntt(path_to_ntt: str, ntt: dict):
+def rewrite_json_ntt(path_to_ntt: str, ntt: dict):
     """
     Записывает ваш словарь в NotTakenTasks
 

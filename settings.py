@@ -28,6 +28,6 @@ check_file(path2jmc)
 check_file(path2ntt)
 check_file(path2pgc)
 
-today_date = str(now_moscow.strftime('%Y-%m-%d'))
+today_date = str(now_moscow.strftime('%Y-%m-%d'))  # TODO: переписать в функцию актуального дня
 yesterday_date = str(yesterday.strftime("%Y-%m-%d"))
 month_date = str(month.strftime("%Y-%m-%d"))

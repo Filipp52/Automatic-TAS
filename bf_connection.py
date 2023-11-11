@@ -160,7 +160,7 @@ def login_worker(login: str, password: str) -> dict:
         raise KeyError('Ошибка в пароле')
 
 
-# TODO: функция добавления/удаления/изменения точки
+# TODO: функция удаления/изменения точки
 
 
 def switch_task_status(worker_id: str, name_of_street: str):
@@ -340,6 +340,27 @@ def registrate_new_location(address: str, when_point_added: str, is_delivered: s
 
     with pd.ExcelWriter(path2dataset) as writer:
         for sheet, data in book.items():
+            data.to_excel(writer, sheet_name=sheet, index=False, header=True)
+
+
+def del_location(address: str):  # TODO: протестировать
+    """
+    Удаляет локацию из таблицы по её адресу
+
+    :param address: Адрес точки, которую нужно удалить
+    """
+    workers_list = pd.read_excel(path2dataset, sheet_name=None)
+    worker_line = workers_list['Входные данные для анализа'].loc[:, ["ID"]]  # TODO: ID -> фвкуы
+    worker_line = worker_line[
+        (worker_line['ID'] == address)
+    ]
+    try:
+        ind = worker_line.index.values[0]
+    except IndexError:
+        raise KeyError(f"Локации с адресом '{address}' нет в таблице")
+    workers_list['Входные данные для анализа'].drop(ind, inplace=True)
+    with pd.ExcelWriter(path2dataset) as writer:
+        for sheet, data in workers_list.items():
             data.to_excel(writer, sheet_name=sheet, index=False, header=True)
 
 
