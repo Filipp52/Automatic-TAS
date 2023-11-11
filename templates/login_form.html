@@ -111,11 +111,14 @@ input[type=submit]:hover {
 
 
 <div class="container">
-    <form action="/action_page.php">
+    <form  action="" method="post">
         <div class="col">
             <h2 style="color: #14368B; ">Добро пожаловать!</h2>
             <input type="text" name="username" placeholder="Введите логин" required>
             <input type="password" name="password" placeholder="Введите пароль" required>
+                 {% if message %}
+                <p align="center" style="color:red;">{{ message }}</p>
+                {% endif %}
             <input type="submit" value="Войти">
         </div>
 
